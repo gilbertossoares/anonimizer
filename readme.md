@@ -45,5 +45,15 @@ Este projeto tem como objetivo a anonimização de documentos utilizando os serv
     ```
 3. Faça upload de um documento e inicie o processo de anonimização.
 
+## Arquitetura
+Este projeto utiliza da seguinte arquitetura:
+
+![Arquitetura do Projeto](static/images/archteture.png)
+
+## Workflow
+O fluxo de trabalho a seguir é o passo a passo pelo caminho do arquivo através da solução.
+
+![Workflow](static/images/workflow.png)
+
 ## Licença
 Este projeto está licenciado sob a [MIT License](LICENSE).
