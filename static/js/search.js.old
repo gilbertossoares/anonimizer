@@ -1,0 +1,148 @@
+document.getElementById('searchForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const query = document.getElementById('searchInput').value;
+    searchBackend(query);
+});
+
+function searchBackend(query) {
+    fetch('/search/query', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => displayResults(data, query))
+    .catch(error => console.error('Error:', error));
+}
+
+function displayResults(results, query) {
+    const resultsContainer = document.getElementById('results');
+    const resultsCount = document.getElementById('resultsCount');
+    resultsContainer.innerHTML = '';
+    
+    if (results.length === 0) {
+        resultsCount.textContent = 'Sem resultados correspondentes';
+        return;
+    }
+    
+    resultsCount.textContent = `Total de resultados: ${results.length}`;
+    
+    results.forEach(result => {
+        const resultItem = document.createElement('li');
+        resultItem.className = 'result-item';
+        const highlightedText = getHighlightedSnippet(result.merged_content, query);
+        resultItem.innerHTML = `
+            <p>${highlightedText}</p>
+            <p><strong>File Name:</strong> ${result.metadata_storage_name}</p>
+        `;
+        resultItem.addEventListener('click', () => {
+            displayImage(result.metadata_storage_path);
+        });
+        resultsContainer.appendChild(resultItem);
+    });
+}
+
+function getHighlightedSnippet(text, term) {
+    const termIndex = text.toLowerCase().indexOf(term.toLowerCase());
+    if (termIndex === -1) return text;
+
+    const start = Math.max(0, termIndex - 60);
+    const end = Math.min(text.length, termIndex + term.length + 60);
+    const snippet = text.substring(start, end);
+    
+    const regex = new RegExp(`(${term})`, 'gi');
+    return snippet.replace(regex, '<span class="highlight">$1</span>');
+}
+
+function displayImage(blobUrl) {
+    const imageViewer = document.getElementById('imageViewer');
+    const iframeViewer = document.getElementById('imageFrame');
+    
+    console.log('Blob URL:', blobUrl);  // Log da URL pública do blob
+    
+    // Definir a URL diretamente no iframe
+    iframeViewer.src = blobUrl;  
+    imageViewer.style.display = 'block'; // Mostrar o visualizador
+}
+
+
+
+document.getElementById('searchForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const query = document.getElementById('searchInput').value;
+    searchBackend(query);
+});
+
+function searchBackend(query) {
+    fetch('/search/query', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query })
+    })
+    .then(response => response.json())
+    .then(data => displayResults(data, query))
+    .catch(error => console.error('Error:', error));
+}
+
+function displayResults(results, query) {
+    const resultsContainer = document.getElementById('results');
+    const resultsCount = document.getElementById('resultsCount');
+    resultsContainer.innerHTML = '';
+    
+    if (results.length === 0) {
+        resultsCount.textContent = 'Sem resultados correspondentes';
+        return;
+    }
+    
+    resultsCount.textContent = `Total de resultados: ${results.length}`;
+    
+    results.forEach(result => {
+        const resultItem = document.createElement('li');
+        resultItem.className = 'result-item';
+        const highlightedText = getHighlightedSnippet(result.merged_content, query);
+        resultItem.innerHTML = `
+            <p>${highlightedText}</p>
+            <p><strong>File Name:</strong> ${result.metadata_storage_name}</p>
+        `;
+        resultItem.addEventListener('click', () => {
+            displayImage(result.metadata_storage_path);
+        });
+        resultsContainer.appendChild(resultItem);
+    });
+}
+
+function getHighlightedSnippet(text, term) {
+    const termIndex = text.toLowerCase().indexOf(term.toLowerCase());
+    if (termIndex === -1) return text;
+
+    const start = Math.max(0, termIndex - 60);
+    const end = Math.min(text.length, termIndex + term.length + 60);
+    const snippet = text.substring(start, end);
+    
+    const regex = new RegExp(`(${term})`, 'gi');
+    return snippet.replace(regex, '<span class="highlight">$1</span>');
+}
+
+function displayImage(encodedPath) {
+    const imageViewer = document.getElementById('imageViewer');
+    const iframeViewer = document.getElementById('imageFrame');
+    let decodedPath = atob(encodedPath.replace(/=+$/, '')); // Remove any trailing "=" signs from Base64
+
+    // Remove "5" if it appears after "png" in the URL
+    decodedPath = decodedPath.replace(/(\.png)5$/, '$1');
+
+    iframeViewer.src = decodedPath;
+    imageViewer.style.display = 'block'; // Ensure the image viewer is displayed
+}
+
+
+// Adicionar funcionalidade ao botão de fechar
+document.getElementById('closeButton').addEventListener('click', function() {
+    const imageViewer = document.getElementById('imageViewer');
+    imageViewer.style.display = 'none';  // Ocultar o popup quando o botão for clicado
+});
+

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure AI Image Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Azure AI Image Search</h1>
+        <form id="searchForm">
+            <input type="text" id="searchInput" placeholder="Search for terms...">
+            <select id="perPageSelect">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+            <button type="submit">Search</button>
+        </form>
+        <p id="resultsCount"></p>
+        <div class="results-container">
+            <ul id="results"></ul>
+        </div>
+        <div id="pagination"></div>
+        
+        <div id="imageViewer">
+            <button id="closeButton">Fechar</button>
+            <img id="imageFrame" src="" alt="Image Preview">
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/search.js') }}"></script>
+</body>
+</html>

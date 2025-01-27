@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modify Image - Anonimização de Documentos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .controls input[type="text"] {
+            padding: 10px;
+            font-size: 1em;
+            width: 100%;
+        }
+
+        .controls button {
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .controls button:hover {
+            background-color: #0056b3;
+        }
+
+        canvas {
+            border: 1px solid black;
+            margin-top: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .button-container button:hover {
+            background-color: #218838;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .controls, .button-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls button, .button-container button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Modify Image</h1>
+    <div class="controls">
+        <input type="text" id="imageName" placeholder="Enter image name">
+        <button onclick="loadImage()">Load Image</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="button-container">
+        <button onclick="undo()">Undo</button>
+        <button onclick="save()">Save</button>
+    </div>
+
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let rectangles = [];
+        let image = new Image();
+        let isDrawing = false;
+        let startX, startY;
+
+        function loadImage() {
+            const imageName = document.getElementById('imageName').value;
+            fetch(`/image/${imageName}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load image');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    image.src = url;
+                    image.onload = function () {
+                        // Ajustar o tamanho do canvas para o tamanho da imagem
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        ctx.drawImage(image, 0, 0);
+                    };
+                })
+                .catch(error => {
+                    console.error('Error loading image:', error);
+                    alert('Error: Could not load the image. Please check the file name.');
+                });
+        }
+
+        canvas.addEventListener('mousedown', function (e) {
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            isDrawing = true;
+        });
+
+        canvas.addEventListener('mousemove', function (e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+
+            // Limpar e redesenhar a imagem e os retângulos anteriores
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0);
+            rectangles.forEach(rect => {
+                const [x0, y0, x1, y1] = rect;
+                ctx.strokeStyle = 'yellow';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+            });
+
+            // Desenhar o retângulo atual enquanto o mouse se move
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(startX, startY, currentX - startX, currentY - startY);
+        });
+
+        canvas.addEventListener('mouseup', function (e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            let endX = e.clientX - rect.left;
+            let endY = e.clientY - rect.top;
+
+            // Garantir que x1 >= x0 e y1 >= y0
+            const x0 = Math.min(startX, endX);
+            const y0 = Math.min(startY, endY);
+            const x1 = Math.max(startX, endX);
+            const y1 = Math.max(startY, endY);
+
+            // Adicionar o retângulo à lista de retângulos
+            rectangles.push([x0, y0, x1, y1]);
+            isDrawing = false;
+
+            // Redesenhar todos os retângulos para garantir que estejam visíveis
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0);
+            rectangles.forEach(rect => {
+                const [x0, y0, x1, y1] = rect;
+                ctx.strokeStyle = 'yellow';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+            });
+        });
+
+        function undo() {
+            if (rectangles.length > 0) {
+                rectangles.pop();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, 0, 0);
+                rectangles.forEach(rect => {
+                    const [x0, y0, x1, y1] = rect;
+                    ctx.strokeStyle = 'yellow';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+                });
+            }
+        }
+
+        function save() {
+            const imageName = document.getElementById('imageName').value;
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: imageName,
+                    rectangles: rectangles
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Image saved successfully!');
+                } else {
+                    alert('Error saving image: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving image:', error);
+                alert('Error: Could not save the image.');
+            });
+        }
+    </script>
+</body>
+</html>
