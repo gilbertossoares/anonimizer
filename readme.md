@@ -30,8 +30,20 @@ Este projeto tem como objetivo a anonimização de documentos utilizando os serv
 ## Configuração
 1. Crie um arquivo `.env` na raiz do projeto e adicione suas credenciais da Azure:
     ```plaintext
-    AZURE_COGNITIVE_SERVICES_KEY=your_key_here
-    AZURE_COGNITIVE_SERVICES_ENDPOINT=your_endpoint_here
+    AZURE_STORAGE_CONNECTION_STRING=
+    INPUT_CONTAINER_NAME=
+    OUTPUT_CONTAINER_NAME=
+    AZURE_AI_SEARCH_ENDPOINT=
+    AZURE_AI_SEARCH_KEY=
+    AZURE_COMPUTER_VISION_ENDPOINT=
+    AZURE_COMPUTER_VISION_KEY=
+    AZURE_CUSTOM_COMPUTE_VISION_ENDPOINT=
+    AZURE_CUSTOM_COMPUTE_VISION_PREDICTION_KEY=
+    AZURE_DATALAKE_ACCOUNT_NAME=
+    AZURE_FORM_RECOGNIZER_ENDPOINT=
+    AZURE_FORM_RECOGNIZER_KEY=
+    AZURE_TEXT_ANALYTCIS_ENDPOINT=
+    AZURE_TEXT_ANALYTICS_KEY=
     ```
 
 ## Uso
